@@ -10,6 +10,9 @@
 //main menu display insert, delete, search, update, display all students and exit
 
 #include <iostream>
+#include <fstream>
+#include <sstream>
+#include <stdexcept>
 using namespace std;
 struct Student {
     int id;
@@ -23,65 +26,164 @@ struct Student {
     Student* next;
 };
 Student *start = NULL;
+const string FILENAME = "students.txt";
+
+// Forward declaration
+void insertAtEnd(int id, string fname, string lname, int age, string department, float cgpa, int graduationYear, int academicYear);
+
+bool isDuplicateId(int id) {
+    Student* temp = start;
+    while (temp != NULL) {
+        if (temp->id == id) {
+            return true;
+        }
+        temp = temp->next;
+    }
+    return false;
+}
+
+void saveToFile() {
+    try {
+        ofstream file(FILENAME.c_str());
+        if (!file.is_open()) {
+            throw runtime_error("Failed to open file for writing");
+        }
+        Student* temp = start;
+        while (temp != NULL) {
+            file << temp->id << "|" << temp->fname << "|" << temp->lname << "|" 
+                 << temp->age << "|" << temp->department << "|" << temp->cgpa << "|" 
+                 << temp->graduationYear << "|" << temp->academicYear << endl;
+            temp = temp->next;
+        }
+        file.close();
+        cout << "Data saved to file successfully" << endl;
+    } catch (exception& e) {
+        cout << "Error saving to file: " << e.what() << endl;
+    }
+}
+
+void loadFromFile() {
+    try {
+        ifstream file(FILENAME.c_str());
+        if (!file.is_open()) {
+            cout << "File does not exist. Starting with empty list." << endl;
+            return;
+        }
+        string line;
+        while (getline(file, line)) {
+            if (line.empty()) continue;
+            stringstream ss(line);
+            int id, age, graduationYear, academicYear;
+            string fname, lname, department;
+            float cgpa;
+            char delimiter;
+            try {
+                ss >> id >> delimiter >> fname >> delimiter >> lname >> delimiter 
+                   >> age >> delimiter >> department >> delimiter >> cgpa >> delimiter 
+                   >> graduationYear >> delimiter >> academicYear;
+                insertAtEnd(id, fname, lname, age, department, cgpa, graduationYear, academicYear);
+            } catch (exception& e) {
+                cout << "Error parsing line from file: " << e.what() << endl;
+            }
+        }
+        file.close();
+        cout << "Data loaded from file successfully" << endl;
+    } catch (exception& e) {
+        cout << "Error loading from file: " << e.what() << endl;
+    }
+}
 void insertAtStart(int id, string fname, string lname, int age, string department, float cgpa, int graduationYear, int academicYear) {
-    Student* newStudent = new Student;
-    newStudent->id = id;
-    newStudent->fname = fname;
-    newStudent->lname = lname;
-    newStudent->age = age;
-    newStudent->department = department;
-    newStudent->cgpa = cgpa;
-    newStudent->graduationYear = graduationYear;
-    newStudent->academicYear = academicYear;
-    newStudent->next = start;
-    start = newStudent;
+    try {
+        if (isDuplicateId(id)) {
+            throw runtime_error("Student with this ID already exists!");
+        }
+        if (id <= 0 || age <= 0 || cgpa < 0 || cgpa > 4.0 || graduationYear <= 0 || academicYear <= 0) {
+            throw invalid_argument("Invalid input values");
+        }
+        Student* newStudent = new Student;
+        newStudent->id = id;
+        newStudent->fname = fname;
+        newStudent->lname = lname;
+        newStudent->age = age;
+        newStudent->department = department;
+        newStudent->cgpa = cgpa;
+        newStudent->graduationYear = graduationYear;
+        newStudent->academicYear = academicYear;
+        newStudent->next = start;
+        start = newStudent;
+        cout << "Student added successfully at start" << endl;
+    } catch (exception& e) {
+        cout << "Error: " << e.what() << endl;
+    }
 }
 void insertAtEnd(int id, string fname, string lname, int age, string department, float cgpa, int graduationYear, int academicYear) {
-    Student* newStudent = new Student;
-    newStudent->id = id;
-    newStudent->fname = fname;
-    newStudent->lname = lname;
-    newStudent->age = age;
-    newStudent->department = department;
-    newStudent->cgpa = cgpa;
-    newStudent->graduationYear = graduationYear;
-    newStudent->academicYear = academicYear;
-    newStudent->next = NULL;
-    if (start == NULL) {
-        start = newStudent;
-        return;
+    try {
+        if (isDuplicateId(id)) {
+            throw runtime_error("Student with this ID already exists!");
+        }
+        if (id <= 0 || age <= 0 || cgpa < 0 || cgpa > 4.0 || graduationYear <= 0 || academicYear <= 0) {
+            throw invalid_argument("Invalid input values");
+        }
+        Student* newStudent = new Student;
+        newStudent->id = id;
+        newStudent->fname = fname;
+        newStudent->lname = lname;
+        newStudent->age = age;
+        newStudent->department = department;
+        newStudent->cgpa = cgpa;
+        newStudent->graduationYear = graduationYear;
+        newStudent->academicYear = academicYear;
+        newStudent->next = NULL;
+        if (start == NULL) {
+            start = newStudent;
+            cout << "Student added successfully at end" << endl;
+            return;
+        }
+        Student* temp = start;
+        while (temp->next != NULL) {
+            temp = temp->next;
+        }
+        temp->next = newStudent;
+        cout << "Student added successfully at end" << endl;
+    } catch (exception& e) {
+        cout << "Error: " << e.what() << endl;
     }
-    Student* temp = start;
-    while (temp->next != NULL) {
-        temp = temp->next;
-    }
-    temp->next = newStudent;
 }
 void insertAtPosition(int id, string fname, string lname, int age, string department, float cgpa, int graduationYear, int academicYear, int position) {
-    if (position == 1) {
-        insertAtStart(id, fname, lname, age, department, cgpa, graduationYear, academicYear);
-        return;
+    try {
+        if (isDuplicateId(id)) {
+            throw runtime_error("Student with this ID already exists!");
+        }
+        if (id <= 0 || age <= 0 || cgpa < 0 || cgpa > 4.0 || graduationYear <= 0 || academicYear <= 0) {
+            throw invalid_argument("Invalid input values");
+        }
+        if (position == 1) {
+            insertAtStart(id, fname, lname, age, department, cgpa, graduationYear, academicYear);
+            return;
+        }
+        Student* newStudent = new Student;
+        newStudent->id = id;
+        newStudent->fname = fname;
+        newStudent->lname = lname;
+        newStudent->age = age;
+        newStudent->department = department;
+        newStudent->cgpa = cgpa;
+        newStudent->graduationYear = graduationYear;
+        newStudent->academicYear = academicYear;
+        newStudent->next = NULL;
+        Student* temp = start;
+        for (int i = 1; i < position - 1 && temp != NULL; i++) {
+            temp = temp->next;
+        }
+        if (temp == NULL) {
+            throw out_of_range("Position out of bounds");
+        }
+        newStudent->next = temp->next;
+        temp->next = newStudent;
+        cout << "Student added successfully at position " << position << endl;
+    } catch (exception& e) {
+        cout << "Error: " << e.what() << endl;
     }
-    Student* newStudent = new Student;
-    newStudent->id = id;
-    newStudent->fname = fname;
-    newStudent->lname = lname;
-    newStudent->age = age;
-    newStudent->department = department;
-    newStudent->cgpa = cgpa;
-    newStudent->graduationYear = graduationYear;
-    newStudent->academicYear = academicYear;
-    newStudent->next = NULL;
-    Student* temp = start;
-    for (int i = 1; i < position - 1 && temp != NULL; i++) {
-        temp = temp->next;
-    }
-    if (temp == NULL) {
-        cout << "Position out of bounds" << endl;
-        return;
-    }
-    newStudent->next = temp->next;
-    temp->next = newStudent;
 }
 void deleteAtStart() {
     if (start == NULL) {
@@ -151,114 +253,176 @@ void displayAllStudents() {
     }
 }
 void updateStudentRecord(int id) {
-    Student* temp = start;
-    while (temp != NULL) {
-        if (temp->id == id) {
-            cout << "Enter new details for the student:" << endl;
-            cout << "First Name: ";
-            cin >> temp->fname;
-            cout << "Last Name: ";
-            cin >> temp->lname;
-            cout << "Age: ";
-            cin >> temp->age;
-            cout << "Department: ";
-            cin >> temp->department;
-            cout << "CGPA: ";
-            cin >> temp->cgpa;
-            cout << "Graduation Year: ";
-            cin >> temp->graduationYear;
-            cout << "Academic Year: ";
-            cin >> temp->academicYear;
-            cout << "Student record updated successfully" << endl;
-            return;
+    try {
+        Student* temp = start;
+        while (temp != NULL) {
+            if (temp->id == id) {
+                cout << "Enter new details for the student:" << endl;
+                cout << "First Name: ";
+                cin >> temp->fname;
+                cout << "Last Name: ";
+                cin >> temp->lname;
+                cout << "Age: ";
+                cin >> temp->age;
+                if (temp->age <= 0) throw invalid_argument("Age must be positive");
+                cout << "Department: ";
+                cin >> temp->department;
+                cout << "CGPA: ";
+                cin >> temp->cgpa;
+                if (temp->cgpa < 0 || temp->cgpa > 4.0) throw invalid_argument("CGPA must be between 0 and 4.0");
+                cout << "Graduation Year: ";
+                cin >> temp->graduationYear;
+                if (temp->graduationYear <= 0) throw invalid_argument("Graduation year must be positive");
+                cout << "Academic Year: ";
+                cin >> temp->academicYear;
+                if (temp->academicYear <= 0) throw invalid_argument("Academic year must be positive");
+                cout << "Student record updated successfully" << endl;
+                return;
+            }
+            temp = temp->next;
         }
-        temp = temp->next;
+        throw runtime_error("Student not found");
+    } catch (exception& e) {
+        cout << "Error: " << e.what() << endl;
     }
-    cout << "Student not found" << endl;
 }
 int main() {
+    try {
+        loadFromFile();
+    } catch (exception& e) {
+        cout << "Error loading file: " << e.what() << endl;
+    }
     int choice;
     do {
-        cout << "Main Menu:" << endl;
-        cout << "1. Insert" << endl;
-        cout << "2. Delete" << endl;
-        cout << "3. Search" << endl;
-        cout << "4. Update" << endl;
-        cout << "5. Display All Students" << endl;
-        cout << "6. Exit" << endl;
-        cout << "Enter your choice: ";
-        cin >> choice;
-        switch (choice) {
-            case 1: {
-                int id, age, graduationYear, academicYear, position;
-                string fname, lname, department;
-                float cgpa;
-                cout << "Enter student details:" << endl;
-                cout << "ID: ";
-                cin >> id;
-                cout << "First Name: ";
-                cin >> fname;
-                cout << "Last Name: ";
-                cin >> lname;
-                cout << "Age: ";
-                cin >> age;
-                cout << "Department: ";
-                cin >> department;
-                cout << "CGPA: ";
-                cin >> cgpa;
-                cout << "Graduation Year: ";
-                cin >> graduationYear;
-                cout << "Academic Year: ";
-                cin >> academicYear;
-                cout << "Insert at position (1 for start, -1 for end): ";
-                cin >> position;
-                if (position == 1) {
-                    insertAtStart(id, fname, lname, age, department, cgpa, graduationYear, academicYear);
-                } else if (position == -1) {
-                    insertAtEnd(id, fname, lname, age, department, cgpa, graduationYear, academicYear);
-                } else {
-                    insertAtPosition(id, fname, lname, age, department, cgpa, graduationYear, academicYear, position);
+        try {
+            cout << "\n=== Main Menu ===" << endl;
+            cout << "1. Insert" << endl;
+            cout << "2. Delete" << endl;
+            cout << "3. Search" << endl;
+            cout << "4. Update" << endl;
+            cout << "5. Display All Students" << endl;
+            cout << "6. Save and Exit" << endl;
+            cout << "Enter your choice: ";
+            if (!(cin >> choice)) {
+                cin.clear();
+                cin.ignore(10000, '\n');
+                throw invalid_argument("Invalid input. Please enter a number.");
+            }
+            switch (choice) {
+                case 1: {
+                    int id, age, graduationYear, academicYear, position;
+                    string fname, lname, department;
+                    float cgpa;
+                    try {
+                        cout << "\n=== Insert Student ===" << endl;
+                        cout << "ID: ";
+                        if (!(cin >> id)) throw invalid_argument("Invalid ID. Must be an integer.");
+                        cout << "First Name: ";
+                        cin >> fname;
+                        cout << "Last Name: ";
+                        cin >> lname;
+                        cout << "Age: ";
+                        if (!(cin >> age)) throw invalid_argument("Invalid Age. Must be an integer.");
+                        cout << "Department: ";
+                        cin >> department;
+                        cout << "CGPA: ";
+                        if (!(cin >> cgpa)) throw invalid_argument("Invalid CGPA. Must be a number.");
+                        cout << "Graduation Year: ";
+                        if (!(cin >> graduationYear)) throw invalid_argument("Invalid Graduation Year. Must be an integer.");
+                        cout << "Academic Year: ";
+                        if (!(cin >> academicYear)) throw invalid_argument("Invalid Academic Year. Must be an integer.");
+                        cout << "Insert at position (1 for start, -1 for end): ";
+                        if (!(cin >> position)) throw invalid_argument("Invalid position. Must be an integer.");
+                        if (position == 1) {
+                            insertAtStart(id, fname, lname, age, department, cgpa, graduationYear, academicYear);
+                        } else if (position == -1) {
+                            insertAtEnd(id, fname, lname, age, department, cgpa, graduationYear, academicYear);
+                        } else {
+                            insertAtPosition(id, fname, lname, age, department, cgpa, graduationYear, academicYear, position);
+                        }
+                    } catch (exception& e) {
+                        cout << "Error: " << e.what() << endl;
+                        cin.clear();
+                        cin.ignore(10000, '\n');
+                    }
+                    break;
                 }
-                break;
-            }
-            case 2: {
-                int position;
-                cout << "Delete at position (1 for start, -1 for end): ";
-                cin >> position;
-                if (position == 1) {
-                    deleteAtStart();
-                } else if (position == -1) {
-                    deleteAtEnd();
-                } else {
-                    deleteAtPosition(position);
+                case 2: {
+                    int position;
+                    try {
+                        cout << "\n=== Delete Student ===" << endl;
+                        cout << "Delete at position (1 for start, -1 for end): ";
+                        if (!(cin >> position)) throw invalid_argument("Invalid position. Must be an integer.");
+                        if (position == 1) {
+                            deleteAtStart();
+                        } else if (position == -1) {
+                            deleteAtEnd();
+                        } else {
+                            deleteAtPosition(position);
+                        }
+                    } catch (exception& e) {
+                        cout << "Error: " << e.what() << endl;
+                        cin.clear();
+                        cin.ignore(10000, '\n');
+                    }
+                    break;
                 }
-                break;
+                case 3: {
+                    int id;
+                    try {
+                        cout << "\n=== Search Student ===" << endl;
+                        cout << "Enter student ID to search: ";
+                        if (!(cin >> id)) throw invalid_argument("Invalid ID. Must be an integer.");
+                        searchById(id);
+                    } catch (exception& e) {
+                        cout << "Error: " << e.what() << endl;
+                        cin.clear();
+                        cin.ignore(10000, '\n');
+                    }
+                    break;
+                }
+                case 4: {
+                    int id;
+                    try {
+                        cout << "\n=== Update Student ===" << endl;
+                        cout << "Enter student ID to update: ";
+                        if (!(cin >> id)) throw invalid_argument("Invalid ID. Must be an integer.");
+                        updateStudentRecord(id);
+                    } catch (exception& e) {
+                        cout << "Error: " << e.what() << endl;
+                        cin.clear();
+                        cin.ignore(10000, '\n');
+                    }
+                    break;
+                }
+                case 5: {
+                    try {
+                        cout << "\n=== Display All Students ===" << endl;
+                        displayAllStudents();
+                    } catch (exception& e) {
+                        cout << "Error: " << e.what() << endl;
+                    }
+                    break;
+                }
+                case 6: {
+                    try {
+                        saveToFile();
+                        cout << "Exiting..." << endl;
+                    } catch (exception& e) {
+                        cout << "Error: " << e.what() << endl;
+                    }
+                    break;
+                }
+                default: {
+                    cout << "Invalid choice. Please try again." << endl;
+                    cin.clear();
+                    cin.ignore(10000, '\n');
+                }
             }
-            case 3: {
-                int id;
-                cout << "Enter student ID to search: ";
-                cin >> id;
-                searchById(id);
-                break;
-            }
-            case 4: {
-                int id;
-                cout << "Enter student ID to update: ";
-                cin >> id;
-                updateStudentRecord(id);
-                break;
-            }
-            case 5: {
-                displayAllStudents();
-                break;
-            }
-            case 6: {
-                cout << "Exiting..." << endl;
-                break;
-            }
-            default: {
-                cout << "Invalid choice. Please try again." << endl;
-            }
+        } catch (exception& e) {
+            cout << "Error: " << e.what() << endl;
+            cin.clear();
+            cin.ignore(10000, '\n');
         }
     } while (choice != 6);
     return 0;

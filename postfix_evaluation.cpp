@@ -27,7 +27,7 @@ int pop(){
         top--;
         return x;
     }
-    
+ 
 }
 int main(){
     string input;
